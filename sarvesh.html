@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ECG Signals & Systems Virtual Lab</title>
+<style>
+:root{--bg:#07111F;--pn:#0D1B2A;--tx:#e6f1ff;--mu:#8ba3bd;--ac:#00E5A8;--bd:#1d3348;--wa:#ffa94d;--er:#ff6b6b;--in:#4dabf7;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root[data-theme=light]{--bg:#eef3f8;--pn:#fff;--tx:#0b1b2b;--mu:#54697f;--ac:#008a66;--bd:#cfdae5}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+#app{display:grid;grid-template-columns:210px 1fr;min-height:100vh}
+nav{background:var(--pn);border-right:1px solid var(--bd);padding:14px 10px;position:sticky;top:0;height:100vh;overflow:auto}
+nav h1{font-size:13px;letter-spacing:.08em;margin:0 0 2px;color:var(--ac)}nav small{color:var(--mu);display:block;margin-bottom:12px;font-size:11px}
+nav button{display:block;width:100%;text-align:left;background:none;border:0;color:var(--mu);padding:9px 10px;border-radius:8px;cursor:pointer;font-size:13px}
+nav button:hover{background:rgba(0,229,168,.08);color:var(--tx)}nav button.on{background:rgba(0,229,168,.15);color:var(--ac);font-weight:600}
+main{padding:16px;min-width:0}
+.card{background:var(--pn);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px;transition:border-color .2s}
+.card:hover{border-color:rgba(0,229,168,.4)}h2{margin:0 0 4px;font-size:20px}h3{margin:0 0 8px;font-size:14px;color:var(--ac)}p{margin:6px 0}
+.g3{display:grid;grid-template-columns:230px minmax(0,1fr) 230px;gap:12px}.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+canvas{width:100%;height:230px;display:block;border-radius:8px;background:rgba(0,0,0,.18)}
+button.b,select,input:not([type=range]):not([type=checkbox]):not([type=radio]){background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font:inherit;min-height:38px}
+button.b{cursor:pointer;transition:transform .15s,border-color .15s}button.b:hover{border-color:var(--ac);transform:translateY(-1px)}button.p{background:var(--ac);color:#04231a;border-color:var(--ac);font-weight:700}
+:focus-visible{outline:2px solid var(--in);outline-offset:2px}
+label{display:block;margin:10px 0 2px;color:var(--mu);font-size:12px}input[type=range]{width:100%;accent-color:var(--ac)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.stat{background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:10px}.stat b{display:block;font-size:22px;color:var(--ac);font-variant-numeric:tabular-nums}.stat span{font-size:11px;color:var(--mu)}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{border-bottom:1px solid var(--bd);padding:6px 4px;text-align:left}th{color:var(--mu);font-weight:600}.sc{overflow-x:auto}
+.warn{color:var(--wa)}.err{color:var(--er)}.mu{color:var(--mu)}.ok{color:var(--ac)}
+.disc{border:1px solid var(--wa);color:var(--wa);border-radius:8px;padding:6px 10px;font-size:12px;margin-bottom:12px}
+.hero{background:linear-gradient(135deg,#0d1b2a,#0a2b33);border-radius:14px;padding:22px;margin-bottom:12px;border:1px solid var(--bd)}
+.hero h1{font-size:clamp(26px,5vw,44px);line-height:1.05;margin:0;letter-spacing:.02em;color:#e6f1ff}.hero p{color:#9fc0d6}
+.heart{display:inline-block;color:var(--er);animation:pl 1s infinite}@keyframes pl{0%,100%{transform:scale(1)}15%{transform:scale(1.35)}30%{transform:scale(1)}}
+.bar{height:8px;background:var(--bg);border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ac);transition:width .6s}
+.badge{display:inline-block;padding:4px 10px;border:1px solid var(--bd);border-radius:20px;margin:3px;font-size:12px;color:var(--mu)}.badge.on{color:var(--ac);border-color:var(--ac)}
+.chip{cursor:pointer}.q{margin:12px 0;padding-bottom:8px;border-bottom:1px solid var(--bd)}.q label{color:var(--tx);font-size:14px;margin:4px 0;cursor:pointer}
+#fab{position:fixed;right:14px;bottom:78px;z-index:20;border-radius:30px;padding:12px 16px}#cmd{position:fixed;right:14px;bottom:130px;z-index:20;display:none;width:210px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:var(--pn);border:1px solid var(--ac);padding:8px 14px;border-radius:8px;display:none;z-index:30}
+@media(max-width:820px){#app{display:block}nav{position:fixed;bottom:0;left:0;right:0;top:auto;height:auto;z-index:15;display:flex;overflow-x:auto;border-right:0;border-top:1px solid var(--bd);padding:4px 4px calc(4px + env(safe-area-inset-bottom,0px))}nav h1,nav small{display:none}nav button{white-space:nowrap;width:auto;min-height:44px}main{padding:10px 10px 130px}.g3,.g2{grid-template-columns:1fr}#fab{bottom:74px}}
+</style></head><body>
+<div id="app"><nav id="nav" aria-label="Lab modules"></nav><main id="main"></main></div>
+<button class="b p" id="fab" aria-label="Open lab controls">⚙ Lab Controls</button><div class="card" id="cmd"></div><div id="toast" role="status"></div>
+<script>
+const $=(s,r=document)=>r.querySelector(s),f=(v,d=2)=>isFinite(v)?Number(v).toFixed(d):'∞';
+const LS={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',2200)};
+/* ---------- signal engine ---------- */
+const rng=s=>{s=s>>>0;return()=>((s=(s*1664525+1013904223)>>>0)/4294967296)};
+const gauss=r=>Math.sqrt(-2*Math.log(r()+1e-12))*Math.cos(2*Math.PI*r());
+const G=[[-.2,.12,.025,'P'],[-.035,-.12,.010,'Q'],[0,1,.011,'R'],[.035,-.25,.012,'S'],[.27,.3,.045,'T']];
+function beats(p){const r=rng((p.seed||1)*7+1),rr0=60/p.hr;let t=.4;const b=[];while(t<p.dur+1){b.push(t);let k=1+.01*gauss(r);if(p.cond=='irr')k=1+.25*gauss(r);if(p.cond=='af')k=.6+.8*r();t+=Math.max(.3,rr0*k)}return b}
+function ecg(p){const n=Math.round(p.fs*p.dur),x=new Float32Array(n),bs=beats(p),waves=[];
+ bs.forEach((t0,bi)=>{const sc=Math.min(1,Math.sqrt(((bs[bi+1]||t0+.8)-t0)/.83));
+  for(const[d,a,w,l]of G){if(p.cond=='af'&&l=='P')continue;const c=t0+d*sc;if(c<p.dur)waves.push({t:c,l});
+   const i0=Math.max(0,Math.floor((c-4*w)*p.fs)),i1=Math.min(n-1,Math.ceil((c+4*w)*p.fs));for(let i=i0;i<=i1;i++){const u=(i/p.fs-c)/w;x[i]+=a*p.amp*Math.exp(-u*u/2)}}});
+ if(p.cond=='af')for(let i=0;i<n;i++)x[i]+=.03*Math.sin(2*Math.PI*6.3*i/p.fs+3*Math.sin(i/p.fs*1.7));
+ return{x,beats:bs.filter(t=>t<p.dur),waves}}
+const NL=[0,.5,1.5,3.5];
+function noisy(x,fs,lvl,type='all',seed=1){const m=NL[lvl],y=Float32Array.from(x);if(!m)return y;const r=rng(11+seed);
+ for(let i=0;i<y.length;i++){const t=i/fs;let v=0;if(type=='all'||type=='gauss')v+=.03*m*gauss(r);if(type=='all'||type=='wander')v+=.12*m*Math.sin(2*Math.PI*.3*t);if(type=='all'||type=='line')v+=.04*m*Math.sin(2*Math.PI*50*t);if(type=='motion')v+=.5*m*Math.pow(Math.max(0,Math.sin(t*.9)),8)*Math.sin(2*Math.PI*3*t);y[i]+=v}return y}
+function bq(type,f0,fs,Q=.7071){const w=2*Math.PI*f0/fs,c=Math.cos(w),a=Math.sin(w)/(2*Q);let b0,b1,b2;
+ if(type=='lp'){b0=(1-c)/2;b1=1-c;b2=b0}else if(type=='hp'){b0=(1+c)/2;b1=-(1+c);b2=b0}else{b0=1;b1=-2*c;b2=1}
+ const a0=1+a;return[b0/a0,b1/a0,b2/a0,-2*c/a0,(1-a)/a0]}
+function run(c,x){const y=new Float32Array(x.length);let x1=0,x2=0,y1=0,y2=0;for(let i=0;i<x.length;i++){const v=c[0]*x[i]+c[1]*x1+c[2]*x2-c[3]*y1-c[4]*y2;x2=x1;x1=x[i];y2=y1;y1=v;y[i]=v}return y}
+const zp=(c,x)=>run(c,run(c,x).reverse()).reverse();
+function chain(F,fs){const c=[],ny=fs/2;if(F.hp&&F.hpF<ny)c.push(bq('hp',F.hpF,fs));if(F.lp&&F.lpF<ny)c.push(bq('lp',F.lpF,fs));if(F.nt&&F.nF<ny)c.push(bq('nt',F.nF,fs,8));return c}
+const filt=(x,fs,F)=>chain(F,fs).reduce((y,c)=>zp(c,y),Float32Array.from(x));
+function mag(c,fq,fs){const w=2*Math.PI*fq/fs,cr=Math.cos(w),ci=-Math.sin(w),c2r=Math.cos(2*w),c2i=-Math.sin(2*w);return Math.hypot(c[0]+c[1]*cr+c[2]*c2r,c[1]*ci+c[2]*c2i)/Math.hypot(1+c[3]*cr+c[4]*c2r,c[3]*ci+c[4]*c2i)}
+function fft(re,im){const n=re.length;for(let i=1,j=0;i<n;i++){let b=n>>1;for(;j&b;b>>=1)j^=b;j^=b;if(i<j){[re[i],re[j]]=[re[j],re[i]];[im[i],im[j]]=[im[j],im[i]]}}
+ for(let l=2;l<=n;l<<=1){const a=-2*Math.PI/l,wr=Math.cos(a),wi=Math.sin(a);for(let i=0;i<n;i+=l){let cr=1,ci=0;for(let k=0;k<l/2;k++){const u=i+k,v=u+l/2,tr=re[v]*cr-im[v]*ci,ti=re[v]*ci+im[v]*cr;re[v]=re[u]-tr;im[v]=im[u]-ti;re[u]+=tr;im[u]+=ti;const t=cr*wr-ci*wi;ci=cr*wi+ci*wr;cr=t}}}}
+function spec(x,N,win){const re=new Float64Array(N),im=new Float64Array(N),L=Math.min(N,x.length);let m=0;for(let i=0;i<L;i++)m+=x[i];m/=L;
+ for(let i=0;i<L;i++){const w=win=='hamming'?.54-.46*Math.cos(2*Math.PI*i/(L-1)):win=='hann'?.5-.5*Math.cos(2*Math.PI*i/(L-1)):1;re[i]=(x[i]-m)*w}
+ fft(re,im);const M=N/2,o=new Float32Array(M);for(let k=0;k<M;k++)o[k]=Math.hypot(re[k],im[k])/L;return o}
+function rpeaks(x,fs){const b=filt(x,fs,{hp:1,hpF:5,lp:1,lpF:15}),s=new Float32Array(b.length),mi=new Float32Array(b.length),w=Math.max(1,Math.round(.12*fs));
+ for(let i=1;i<b.length;i++){const d=b[i]-b[i-1];s[i]=d*d}let acc=0,mx=0;for(let i=0;i<s.length;i++){acc+=s[i];if(i>=w)acc-=s[i-w];mi[i]=acc/w;if(mi[i]>mx)mx=mi[i]}
+ const th=.3*mx,refr=Math.round(.25*fs),pk=[];let i=0;
+ while(i<mi.length){if(mi[i]>th){let j=i;while(j<mi.length&&mi[j]>th)j++;let k=i,best=-1e9;for(let q=Math.max(0,i-w);q<Math.min(b.length,j);q++)if(b[q]>best){best=b[q];k=q}if(!pk.length||k-pk[pk.length-1]>refr)pk.push(k);i=j}else i++}return pk}
+function analyze(x,fs){const N=x.length;let s=0,e=0,mx=-1e9,mn=1e9;for(const v of x){s+=v;e+=v*v;if(v>mx)mx=v;if(v<mn)mn=v}
+ const pk=rpeaks(x,fs),rr=[];for(let i=1;i<pk.length;i++)rr.push((pk[i]-pk[i-1])/fs);
+ const m=rr.length?rr.reduce((a,b)=>a+b)/rr.length:0,sd=rr.length?Math.sqrt(rr.reduce((a,b)=>a+(b-m)**2,0)/rr.length):0;
+ return{N,mean:s/N,rms:Math.sqrt(e/N),energy:e,power:e/N,max:mx,min:mn,pk,rr:m,sd,hr:m?60/m:0,cv:m?sd/m:0}}
+function snr(a,b){let ps=0,pn=0;for(let i=0;i<a.length;i++){ps+=a[i]*a[i];const d=b[i]-a[i];pn+=d*d}return pn<1e-12?Infinity:10*Math.log10(ps/pn)}
+function corr(a,b){const n=Math.min(a.length,b.length);let ma=0,mb=0;for(let i=0;i<n;i++){ma+=a[i];mb+=b[i]}ma/=n;mb/=n;let sab=0,sa=0,sb=0;for(let i=0;i<n;i++){sab+=(a[i]-ma)*(b[i]-mb);sa+=(a[i]-ma)**2;sb+=(b[i]-mb)**2}return sab/Math.sqrt(sa*sb||1)}
+/* ---------- plotting ---------- */
+function plot(cv,ser,o={}){const d=devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;if(!W||!H)return;if(cv.width!=W*d||cv.height!=H*d){cv.width=W*d;cv.height=H*d}
+ const g=cv.getContext('2d');g.setTransform(d,0,0,d,0,0);g.clearRect(0,0,W,H);const cs=getComputedStyle(document.documentElement),mu=cs.getPropertyValue('--mu'),bd=cs.getPropertyValue('--bd');
+ const x0=o.x0??Math.min(...ser.map(s=>s.x0||0)),x1=o.x1??Math.max(...ser.map(s=>(s.x0||0)+s.y.length*s.dx));let lo=o.ymin,hi=o.ymax;
+ if(lo==null){lo=1e9;hi=-1e9;for(const s of ser){const a=Math.max(0,Math.floor((x0-(s.x0||0))/s.dx)),b=Math.min(s.y.length,Math.ceil((x1-(s.x0||0))/s.dx));for(let i=a;i<b;i++){const v=s.y[i];if(v<lo)lo=v;if(v>hi)hi=v}}if(lo>hi){lo=-1;hi=1}const p=(hi-lo)*.12||.5;lo-=p;hi+=p}
+ const L=40,T=8,Bm=18,pw=W-L-6,ph=H-T-Bm,X=t=>L+(t-x0)/(x1-x0)*pw,Y=v=>T+(hi-v)/(hi-lo)*ph;
+ g.font='10px system-ui';g.fillStyle=mu;g.strokeStyle=bd;g.lineWidth=1;const nx=Math.min(10,Math.max(2,Math.floor(pw/70)));
+ for(let i=0;i<=nx;i++){const t=x0+(x1-x0)*i/nx,x=X(t);g.beginPath();g.moveTo(x,T);g.lineTo(x,T+ph);g.stroke();g.textAlign='center';g.fillText(t.toFixed(o.xd??1),x,H-5)}
+ for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4,y=Y(v);g.beginPath();g.moveTo(L,y);g.lineTo(L+pw,y);g.stroke();g.textAlign='right';g.fillText(v.toFixed(2),L-4,y+3)}
+ g.save();g.beginPath();g.rect(L,T,pw,ph);g.clip();
+ ser.forEach(s=>{g.strokeStyle=s.c;g.lineWidth=s.w||1.6;g.globalAlpha=s.a||1;g.beginPath();const a=Math.max(0,Math.floor((x0-(s.x0||0))/s.dx)-1),b=Math.min(s.y.length,Math.ceil((x1-(s.x0||0))/s.dx)+1),st=Math.max(1,Math.floor((b-a)/(pw*1.5)));let first=1;
+  for(let i=a;i<b;i+=st){const x=X((s.x0||0)+i*s.dx),y=Y(s.y[i]);first?(g.moveTo(x,y),first=0):g.lineTo(x,y)}g.stroke();g.globalAlpha=1;
+  if(s.dots)for(let i=a;i<b;i++){g.fillStyle=s.c;g.beginPath();g.arc(X((s.x0||0)+i*s.dx),Y(s.y[i]),3,0,7);g.fill()}});g.restore();
+ (o.marks||[]).forEach(m=>{if(m.t<x0||m.t>x1)return;const x=X(m.t),y=Y(m.v);g.fillStyle=m.c||'#ff6b6b';g.beginPath();g.arc(x,y,3.5,0,7);g.fill();g.font='bold 11px system-ui';g.textAlign='center';g.fillText(m.l||'',x,y+(m.dn?15:-8))});
+ if(o.cursor!=null){const x=X(o.cursor);g.strokeStyle='#00E5A8';g.globalAlpha=.7;g.beginPath();g.moveTo(x,T);g.lineTo(x,T+ph);g.stroke();g.globalAlpha=1}
+ g.font='11px system-ui';let lx=L+6;ser.forEach(s=>{if(!s.n)return;g.fillStyle=s.c;g.textAlign='left';const t='■ '+s.n;g.fillText(t,lx,T+12);lx+=g.measureText(t).width+12})}
+/* ---------- state ---------- */
+const DEF={hr:72,amp:1,fs:500,dur:10,cond:'nsr',noise:0,speed:1,seed:1},PRE={nsr:72,brady:48,tachy:125,irr:80,af:95};
+const COND={nsr:'Normal Sinus Rhythm',brady:'Bradycardia',tachy:'Tachycardia',irr:'Irregular Rhythm',af:'AF-like Rhythm'},NZ=['OFF','Low','Medium','High'];
+let S={...DEF},cur,B,view='dash',running=true,dirty=1,hd=4,OBS=LS.get('OBS',[]),P=LS.get('P',{}),QZ=LS.get('QZ',{}),PROF=LS.get('PROF',{}),HIST=LS.get('HIST',[]);
+function build(p){const c=ecg(p),sig=noisy(c.x,p.fs,p.noise,'all',p.seed);return{p:{...p},clean:c.x,beats:c.beats,waves:c.waves,sig,an:analyze(sig,p.fs)}}
+function rebuild(){cur=build(S);hd=Math.min(hd,S.dur);if(hd<4)hd=4;dirty=1}
+const rhythm=()=>S.cond=='af'?'Irregularly irregular':cur.an.cv>.08?'Irregular':'Regular';
+const quality=()=>{const s=snr(cur.clean,cur.sig);return s==Infinity?'Excellent':s>20?'Good':s>10?'Fair':'Poor'};
+const mark=k=>{if(!P[k]){P[k]=1;LS.set('P',P)}};
+/* ---------- helpers ---------- */
+const sel=(k,opts,v,extra='')=>`<select data-k="${k}" ${extra} aria-label="${k}">${opts.map(([a,b])=>`<option value="${a}" ${a==v?'selected':''}>${b}</option>`).join('')}</select>`;
+const sld=(k,l,mn,mx,st,v,u)=>`<label>${l}: <b id="o_${k}">${v}</b> ${u}<input type="range" data-k="${k}" min="${mn}" max="${mx}" step="${st}" value="${v}" aria-label="${l}"></label>`;
+const TIP={bpm:'Beats per minute = 60 / R-R interval.',rr:'Time between successive R peaks.',rms:'Root-mean-square: effective (average) signal level.',snr:'Signal-to-noise ratio in dB: 10·log10(Psignal/Pnoise).'};
+const tip=k=>`<span class="mu" title="${TIP[k]}" tabindex="0">ⓘ</span>`;
+function upd(k,v){S[k]=v;if(k=='cond'){S.hr=PRE[v];const h=$('[data-k=hr]');if(h)h.value=S.hr}rebuild();const o=$('#o_'+k);if(o)o.textContent=v;const oh=$('#o_hr');if(oh)oh.textContent=S.hr;refresh()}
+function bindCtl(root=document){root.querySelectorAll('[data-k]').forEach(e=>{if(!(e.dataset.k in DEF))return;e.addEventListener('input',()=>{const v=e.dataset.t=='s'||e.tagName=='SELECT'&&isNaN(e.value)?e.value:+e.value;upd(e.dataset.k,v)})})}
+function tbl(h,rows){return`<div class="sc"><table><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</table></div>`}
+async function dl(name,data){const d=window.claude?.use?await claude.use('downloads'):null;if(!d){toast('Downloads are unavailable in this view');return}try{await d.save({filename:name,data});toast('Saved '+name)}catch(e){toast(e.code=='declined'?'Download cancelled':'Download failed: '+(e.message||e.code))}}
+/* ---------- views ---------- */
+const V={};
+V.dash={html:()=>`<div class="hero"><div class="mu" style="font-size:12px">EDUCATIONAL SIMULATION · SIGNALS & SYSTEMS</div><h1>ECG SIGNALS<br>& SYSTEMS<br><span style="color:var(--ac)">VIRTUAL LAB</span></h1><p>Generate. Manipulate. Analyze. Understand.</p>
+<div class="row"><button class="b p" data-go="sim">START VIRTUAL EXPERIMENT</button><button class="b" data-go="theory">EXPLORE THEORY</button></div><canvas id="mini" style="height:130px;margin-top:14px"></canvas></div>
+<div class="disc">Educational simulation only — not a medical diagnostic system.</div>
+<div class="g4" id="dstats"></div><div class="g2" style="margin-top:12px"><div class="card"><h3>Laboratory progress <span id="pct"></span></h3><div id="prog"></div></div><div class="card"><h3>Achievements</h3><div id="badges"></div></div></div>
+<div class="g4">${[['theory','ECG Fundamentals'],['ops','Signal Operations'],['flt','Noise & Filtering'],['fft','Fourier Transform'],['conv','Convolution'],['ana','ECG Analysis']].map(([k,n])=>`<div class="card chip" data-go="${k}"><h3>${n}</h3><span class="mu">Open module →</span></div>`).join('')}</div>`,
+ draw(){const a=cur.an;$('#dstats').innerHTML=[['<span class="heart">♥</span> '+f(a.hr,0)+' BPM','Heart rate'],[f(a.rr,2)+' s','R-R interval'],[S.fs+' Hz','Sampling rate'],[S.dur+' s','Duration'],[running?'SIMULATING':'PAUSED','Status']].map(([b,s])=>`<div class="stat"><b style="font-size:18px">${b}</b><span>${s}</span></div>`).join('');
+ const keys=PK.map(k=>k[0]),done=keys.filter(k=>P[k]).length;$('#pct').textContent=Math.round(done/keys.length*100)+'%';
+ $('#prog').innerHTML=PK.map(([k,n])=>`<div style="display:flex;justify-content:space-between"><span>${n}</span><span class="${P[k]?'ok':'mu'}">${P[k]?'✓ done':'—'}</span></div>`).join('')+`<div class="bar" style="margin-top:8px"><i style="width:${done/keys.length*100}%"></i></div>`;
+ const bd=[['ECG Explorer',P.sim&&P.theory],['Signal Analyst',P.ana&&P.ops],['FFT Explorer',P.fft],['Filtering Expert',P.flt],['Convolution Master',P.conv],['Experiment Complete',P.pre&&P.post&&OBS.length]];
+ $('#badges').innerHTML=bd.map(([n,o])=>`<span class="badge ${o?'on':''}">${o?'✓ ':'🔒 '}${n}</span>`).join('')}};
+const PK=[['theory','Theory'],['pre','Pre-Test'],['sim','Simulation'],['ops','Signal Ops'],['flt','Filtering'],['fft','FFT'],['conv','Convolution'],['ana','Analysis'],['post','Post-Test']];
+const WV={P:['P wave','Atrial depolarization','≈80–100 ms, ≈0.1–0.25 mV. Precedes atrial contraction.'],Q:['Q wave','First downward deflection: septal depolarization','<40 ms, small negative deflection.'],R:['R wave','Main ventricular depolarization (largest upward peak)','≈1 mV in lead II; R-R interval sets heart rate.'],S:['S wave','Late ventricular depolarization','Downward deflection after R; with Q and R forms the QRS (≈80–120 ms).'],T:['T wave','Ventricular repolarization (recovery)','≈160 ms, ≈0.1–0.5 mV, follows the ST segment.']};
+let wsel='R';
+V.theory={html:()=>`<h2>Theory</h2><div class="g2"><div class="card"><h3>ECG morphology — click a wave</h3><canvas id="beat"></canvas><div class="row" style="margin-top:8px">${Object.keys(WV).map(k=>`<button class="b" data-w="${k}">${k}</button>`).join('')}</div><div id="winfo" class="card" style="margin:8px 0 0"></div></div>
+<div class="card"><h3>What is an ECG?</h3><p>An electrocardiogram records the heart's electrical activity over time. Electrodes on the skin measure tiny voltage differences (leads); the signal shows rate, rhythm and conduction.</p><p><b>Intervals:</b> PR ≈120–200 ms · QRS ≈80–120 ms · QT ≈350–450 ms · R-R = 60/HR · HR = 60/RR.</p></div></div>
+<div class="g4">${[['Continuous vs discrete','x(t) is defined for all t; x[n]=x(nTs) after sampling.'],['Periodic / aperiodic','ECG is quasi-periodic: repeats with period ≈ R-R.'],['Deterministic / random','Clean ECG model is deterministic; noise is random.'],['Energy vs power','Energy E=Σ|x|² is finite for transient signals; a continuing ECG is a power signal, P=(1/N)Σ|x|².'],['Operations','A·x(t) scales; x(t−t0) shifts; x(−t) reverses; x(at) compresses.'],['Model used','Sum of Gaussians for P,Q,R,S,T per beat; timing from R-R = 60/HR.']].map(([a,b])=>`<div class="card"><h3>${a}</h3><p class="mu">${b}</p></div>`).join('')}</div>`,
+ init(){document.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{wsel=b.dataset.w;V.theory.draw()})},
+ draw(){const c=ecg({hr:60,amp:1,fs:500,dur:1.6,cond:'nsr',seed:1}),m=c.waves.filter(w=>w.t<1.5).map(w=>({t:w.t,v:c.x[Math.round(w.t*500)],l:w.l,c:w.l==wsel?'#00E5A8':'#ffa94d',dn:w.l=='Q'||w.l=='S'}));
+ plot($('#beat'),[{y:c.x,dx:1/500,c:'#4dabf7'}],{marks:m,x1:1.5});const w=WV[wsel];$('#winfo').innerHTML=`<b class="ok">${w[0]}</b><br>${w[1]}<br><span class="mu">${w[2]}</span>`}};
+V.sim={html:()=>`<div class="disc">Educational simulation only — not a medical diagnostic system.</div><div class="g3"><div class="card"><h3>Controls</h3>
+${sld('hr','Heart rate',40,160,1,S.hr,'BPM')}${sld('amp','Amplitude',.5,2,.1,S.amp,'×')}
+<label>Condition${sel('cond',Object.entries(COND),S.cond)}</label><label>Sampling rate${sel('fs',[100,250,500,1000].map(v=>[v,v+' Hz']),S.fs)}</label><label>Duration${sel('dur',[5,10,20,30].map(v=>[v,v+' s']),S.dur)}</label>
+<label>Noise${sel('noise',NZ.map((n,i)=>[i,n]),S.noise)}</label><label>Speed${sel('speed',[.5,1,2,4].map(v=>[v,v+'×']),S.speed)}</label>
+<div class="row" style="margin-top:10px"><button class="b p" onclick="running=true;dirty=1">START</button><button class="b" onclick="running=false">PAUSE</button><button class="b" onclick="resetAll()">RESET</button><button class="b" onclick="S.seed++;rebuild();refresh()">NEW SIGNAL</button></div></div>
+<div class="card"><h3>Oscilloscope — time (s) vs voltage (mV) <span class="heart" id="hb">♥</span></h3><canvas id="scope" style="height:300px" role="img" aria-label="Live ECG"></canvas><p class="mu" style="font-size:12px">Green line = scanning position · red dots = R peaks · orange = P, Q, S, T</p></div>
+<div class="card"><h3>Live metrics</h3><div id="met"></div></div></div>
+<div class="card"><h3>Before vs After</h3><div class="row"><button class="b" id="setb">Set current as BEFORE</button><label style="margin:0"><input type="checkbox" id="ovl"> Overlay signals</label></div><div class="g2" style="margin-top:8px"><div><canvas id="cb" style="height:170px"></canvas></div><div><canvas id="ca" style="height:170px"></canvas></div></div><div id="cmpt"></div></div>
+<div class="card"><h3>What changed?</h3><div id="chg"></div></div><div class="row"><button class="b p" id="addrow">Add current run to observation table</button></div>`,
+ init(){bindCtl();$('#setb').onclick=()=>{B=build(S);refresh();toast('BEFORE signal updated')};$('#ovl').onchange=refresh;$('#addrow').onclick=addRow},
+ draw(){const a=cur.an;$('#met').innerHTML=[['Heart rate',f(a.hr,0)+' BPM'],['R-R interval',f(a.rr,2)+' s'],['Rhythm',rhythm()],['Amplitude',f(a.max,2)+' mV'],['Sampling',S.fs+' Hz'],['Signal quality',quality()],['Cycle count','<span id="cyc"></span>'],['Condition',COND[S.cond]]].map(([k,v])=>`<div style="padding:5px 0;border-bottom:1px solid var(--bd)"><span class="mu">${k}</span><br><b>${v}</b></div>`).join('');
+ $('#hb').style.animationDuration=(60/Math.max(30,a.hr||S.hr))+'s';
+ const ov=$('#ovl').checked,x1=Math.min(6,S.dur);$('#ca').parentElement.style.display=ov?'none':'';
+ if(ov)plot($('#cb'),[{y:B.sig,dx:1/B.p.fs,c:'#4dabf7',n:'BEFORE'},{y:cur.sig,dx:1/S.fs,c:'#00E5A8',n:'AFTER',a:.85}],{x1});
+ else{plot($('#cb'),[{y:B.sig,dx:1/B.p.fs,c:'#4dabf7',n:'BEFORE'}],{x1});plot($('#ca'),[{y:cur.sig,dx:1/S.fs,c:'#00E5A8',n:'AFTER'}],{x1})}
+ const b=B.an;$('#cmpt').innerHTML=tbl(['Metric','Before','After','Δ','%'],[['Heart rate (BPM)',b.hr,a.hr,1],['R-R interval (s)',b.rr,a.rr,3],['Peak amplitude (mV)',b.max,a.max,3],['RMS',b.rms,a.rms,4],['Energy',b.energy,a.energy,1],['Average power',b.power,a.power,4]].map(([n,x,y,d])=>{const pc=x?(y-x)/Math.abs(x)*100:0;return[n,f(x,d),f(y,d),(y>=x?'+':'')+f(y-x,d),(pc>=0?'+':'')+f(pc,1)+'%']}));
+ const c=[],p=B.p;if(p.hr!=S.hr)c.push(`Heart rate ${p.hr} → ${S.hr} BPM; R-R ${f(60/p.hr)} → ${f(60/S.hr)} s; cycle frequency ${f(p.hr/60)} → ${f(S.hr/60)} Hz. R peaks are ${S.hr>p.hr?'closer together':'further apart'}.`);
+ if(p.amp!=S.amp)c.push(`Amplitude ×${p.amp} → ×${S.amp}: waveform scaled vertically; timing unchanged.`);if(p.fs!=S.fs)c.push(`Sampling ${p.fs} → ${S.fs} Hz: Ts ${f(1000/p.fs,1)} → ${f(1000/S.fs,1)} ms; Nyquist ${p.fs/2} → ${S.fs/2} Hz.`);
+ if(p.noise!=S.noise)c.push(`Noise ${NZ[p.noise]} → ${NZ[S.noise]}: random + interference components added, lowering SNR (now ${f(snr(cur.clean,cur.sig),1)} dB).`);if(p.cond!=S.cond)c.push(`Condition ${COND[p.cond]} → ${COND[S.cond]}: ${S.cond=='af'?'R-R intervals vary irregularly and P waves are absent in this educational model.':'R-R timing pattern changed.'}`);if(p.dur!=S.dur)c.push(`Duration ${p.dur} → ${S.dur} s: ${Math.round(S.dur*S.fs)} samples.`);
+ $('#chg').innerHTML=c.length?c.map(x=>`<p>• ${x}</p>`).join(''):'<p class="mu">No parameter differs from the BEFORE signal. Change a control to see the effect.</p>'}};
+function addRow(){const a=cur.an;OBS.push({c:COND[S.cond],hr:f(a.hr,0),rr:f(a.rr,2),amp:S.amp,fs:S.fs,nz:NZ[S.noise],rms:f(a.rms,3),en:f(a.energy,0),pw:f(a.power,4),rh:rhythm(),ob:''});LS.set('OBS',OBS);toast('Row '+OBS.length+' added')}
+function resetAll(){S={...DEF};B=build(DEF);hd=4;running=true;rebuild();render()}
+/* signal operations */
+let OP={op:'scale',v:1.5};
+const OPS={scale:['A·x(t)','y(t) = A x(t)',.5,2,.1,1.5],shift:['x(t−t0)','y(t) = x(t − t0)',-2,2,.1,1],rev:['x(−t)','y(t) = x(−t)',0,0,1,0],tsc:['x(at)','y(t) = x(at)',.5,2,.1,2],add:['x+g','y(t) = x(t) + g(t)',0,0,1,0],sub:['x−g','y(t) = x(t) − g(t)',0,0,1,0],mul:['x·g','y(t) = x(t)·g(t)',0,0,1,0]};
+V.ops={html:()=>`<h2>Signal Operations Lab</h2><div class="card"><div class="row">${Object.entries(OPS).map(([k,o])=>`<button class="b ${OP.op==k?'p':''}" data-op="${k}">${o[0]}</button>`).join('')}</div><p class="ok" id="opf"></p><div id="opsl"></div><p class="mu">x(t): simulated ECG on 0–5 s (zero elsewhere) · g(t) = 0.5·sin(2π·1.2t) on 0–5 s</p></div>
+<div class="g2"><div class="card"><h3>Original x(t)</h3><canvas id="o1"></canvas></div><div class="card"><h3>Modified y(t)</h3><canvas id="o2"></canvas></div></div>`,
+ init(){document.querySelectorAll('[data-op]').forEach(b=>b.onclick=()=>{OP.op=b.dataset.op;OP.v=OPS[OP.op][5];render()});const o=OPS[OP.op];$('#opf').textContent=o[1];
+  $('#opsl').innerHTML=o[3]>o[2]?`<label>Parameter: <b id="opv">${OP.v}</b><input type="range" id="opr" min="${o[2]}" max="${o[3]}" step="${o[4]}" value="${OP.v}"></label>`:'';
+  const r=$('#opr');if(r)r.oninput=()=>{OP.v=+r.value;$('#opv').textContent=OP.v;V.ops.draw()}},
+ draw(){const fs=Math.min(S.fs,250),T=5,step=Math.max(1,Math.round(S.fs/fs)),x=t=>t>=0&&t<T?cur.clean[Math.round(t*S.fs)]||0:0,g=t=>t>=0&&t<T?.5*Math.sin(2*Math.PI*1.2*t):0,n=10*fs,a=new Float32Array(n),b=new Float32Array(n),v=OP.v;
+  for(let i=0;i<n;i++){const t=-5+i/fs;a[i]=x(t);b[i]=OP.op=='scale'?v*x(t):OP.op=='shift'?x(t-v):OP.op=='rev'?x(-t):OP.op=='tsc'?x(v*t):OP.op=='add'?x(t)+g(t):OP.op=='sub'?x(t)-g(t):x(t)*g(t)}
+  const ym=Math.max(1.6,S.amp*2),o={x0:-5,x1:5,ymin:-ym/2,ymax:ym};plot($('#o1'),[{y:a,dx:1/fs,x0:-5,c:'#4dabf7'}],o);plot($('#o2'),[{y:b,dx:1/fs,x0:-5,c:'#00E5A8'}],o)}};
+/* filtering */
+const F={lvl:2,type:'all',hp:1,hpF:.5,lp:1,lpF:40,nt:1,nF:50};
+function sigs(){const nz=noisy(cur.clean,S.fs,F.lvl,F.type,S.seed);return{cl:cur.clean,nz,fl:filt(nz,S.fs,F)}}
+V.flt={html:()=>`<h2>Noise & Filtering Lab</h2><div class="g3"><div class="card"><h3>Noise</h3><label>Level<select id="fl">${NZ.map((n,i)=>`<option value="${i}" ${i==F.lvl?'selected':''}>${n}</option>`).join('')}</select></label><label>Type<select id="ft">${[['all','All combined'],['gauss','Gaussian'],['wander','Baseline wander'],['line','Power-line 50 Hz'],['motion','Motion artifact-like']].map(([a,b])=>`<option value="${a}" ${a==F.type?'selected':''}>${b}</option>`).join('')}</select></label>
+<h3 style="margin-top:14px">Filters</h3>${[['hp','High-pass',.1,5,.1,'hpF'],['lp','Low-pass',10,150,1,'lpF'],['nt','Notch',40,60,1,'nF']].map(([k,n,a,b,s,fk])=>`<label><input type="checkbox" data-fc="${k}" ${F[k]?'checked':''}> ${n}: <b id="v_${fk}">${F[fk]}</b> Hz<input type="range" data-fr="${fk}" min="${a}" max="${b}" step="${s}" value="${F[fk]}"></label>`).join('')}<p class="mu" style="font-size:12px">Educational ECG band: 0.5–40 Hz; notch at 50 Hz. High-pass + low-pass = band-pass.</p><div id="fmsg" class="warn"></div></div>
+<div class="card" style="grid-column:span 2;min-width:0"><canvas id="f1" style="height:150px"></canvas><canvas id="f2" style="height:150px;margin-top:6px"></canvas><canvas id="f3" style="height:150px;margin-top:6px"></canvas></div></div>
+<div class="g2"><div class="card"><h3>Results ${tip('snr')}</h3><div id="fres"></div></div><div class="card"><h3>Filter frequency response (zero-phase, |H|²)</h3><canvas id="f4" style="height:180px"></canvas></div></div>`,
+ init(){$('#fl').onchange=e=>{F.lvl=+e.target.value;V.flt.draw()};$('#ft').onchange=e=>{F.type=e.target.value;V.flt.draw()};document.querySelectorAll('[data-fc]').forEach(e=>e.onchange=()=>{F[e.dataset.fc]=e.checked?1:0;V.flt.draw()});document.querySelectorAll('[data-fr]').forEach(e=>e.oninput=()=>{F[e.dataset.fr]=+e.value;$('#v_'+e.dataset.fr).textContent=e.value;V.flt.draw()})},
+ draw(){const m=[],ny=S.fs/2;if(F.hp&&F.lp&&F.hpF>=F.lpF)m.push('Invalid range: high-pass cutoff must be below low-pass cutoff.');if(F.lp&&F.lpF>=ny)m.push('Low-pass cutoff must be below the Nyquist frequency ('+ny+' Hz) — filter skipped.');if(F.nt&&F.nF>=ny)m.push('Notch at '+F.nF+' Hz needs Fs > '+2*F.nF+' Hz — skipped.');if(S.fs<100)m.push('Sampling frequency must be at least twice the highest signal frequency to avoid aliasing.');
+  $('#fmsg').innerHTML=m.join('<br>');if(F.hp&&F.lp&&F.hpF>=F.lpF)return;mark('flt');const s=sigs(),x1=Math.min(6,S.dur),o={x1},d=1/S.fs;
+  const yr=[Math.min(...s.nz)-.1,Math.max(...s.nz)+.1];const oo={x1,ymin:yr[0],ymax:yr[1]};
+  plot($('#f1'),[{y:s.cl,dx:d,c:'#4dabf7',n:'Clean ECG'}],oo);plot($('#f2'),[{y:s.nz,dx:d,c:'#ffa94d',n:'Noisy ECG'}],oo);plot($('#f3'),[{y:s.fl,dx:d,c:'#00E5A8',n:'Filtered ECG'}],oo);
+  const a=analyze(s.nz,S.fs),b=analyze(s.fl,S.fs);$('#fres').innerHTML=tbl(['','Before filter','After filter'],[['SNR vs clean (dB)',f(snr(s.cl,s.nz),1),f(snr(s.cl,s.fl),1)],['RMS',f(a.rms,3),f(b.rms,3)],['Peak',f(a.max,3),f(b.max,3)],['Correlation with clean',f(corr(s.cl,s.nz),3),f(corr(s.cl,s.fl),3)],['RMS difference',f(Math.sqrt(s.cl.reduce((q,v,i)=>q+(s.nz[i]-v)**2,0)/s.cl.length),3),f(Math.sqrt(s.cl.reduce((q,v,i)=>q+(s.fl[i]-v)**2,0)/s.cl.length),3)]])+`<p class="mu">SNR improvement: <b class="ok">${f(snr(s.cl,s.fl)-snr(s.cl,s.nz),1)} dB</b>. Correlation ≥0.9 = high similarity, 0.6–0.9 moderate, else low (signal similarity only).</p>`;
+  const ch=chain(F,S.fs),fr=[],xm=Math.min(100,ny),n=400;for(let i=0;i<n;i++){const q=xm*i/n;fr.push(ch.reduce((h,c)=>h*mag(c,q,S.fs)**2,1))}plot($('#f4'),[{y:fr,dx:xm/n,c:'#00E5A8'}],{x1:xm,ymin:0,ymax:1.1,xd:0})}};
+/* fourier */
+const FF={win:'hann',N:1024,c:1,n:1,f:1};
+V.fft={html:()=>`<h2>Fourier Transform Lab</h2><div class="card"><p class="ok">X(f)=∫x(t)e^(−j2πft)dt &nbsp;·&nbsp; DFT: X[k]=Σx[n]e^(−j2πkn/N) &nbsp;·&nbsp; Δf=Fs/N</p><div class="row">Window ${sel('w',[['rect','Rectangular'],['hamming','Hamming'],['hann','Hann']],FF.win,'data-fx')} FFT size ${sel('N',[512,1024,2048,4096].map(v=>[v,v]),FF.N,'data-fx')}
+${[['c','Clean','#4dabf7'],['n','Noisy','#ffa94d'],['f','Filtered','#00E5A8']].map(([k,n,c])=>`<label style="margin:0"><input type="checkbox" data-fk="${k}" ${FF[k]?'checked':''}> <span style="color:${c}">${n}</span></label>`).join('')}</div><p class="mu" style="font-size:12px">Noise/filter settings come from the Filtering lab. DC is removed before the FFT. Uses the first N samples of the signal.</p></div>
+<div class="g2"><div class="card"><h3>Time domain (s)</h3><canvas id="t1"></canvas></div><div class="card"><h3>Magnitude spectrum (Hz)</h3><canvas id="t2"></canvas></div></div><div class="card" id="fres2"></div>`,
+ init(){document.querySelectorAll('[data-fx]').forEach(e=>e.onchange=()=>{FF[e.dataset.k=='w'?'win':'N']=e.dataset.k=='w'?e.value:+e.value;V.fft.draw()});document.querySelectorAll('[data-fk]').forEach(e=>e.onchange=()=>{FF[e.dataset.fk]=e.checked?1:0;V.fft.draw()})},
+ draw(){mark('fft');const s=sigs(),N=FF.N,df=S.fs/N,xm=Math.min(60,S.fs/2),cf=[['c',s.cl,'#4dabf7','Clean'],['n',s.nz,'#ffa94d','Noisy'],['f',s.fl,'#00E5A8','Filtered']].filter(a=>FF[a[0]]);
+  const sp=cf.map(([k,x,c,n])=>({y:spec(x,N,FF.win),dx:df,c,n,x:x}));const L=Math.min(N,s.cl.length);
+  plot($('#t1'),cf.map(([k,x,c,n])=>({y:x,dx:1/S.fs,c,n})),{x1:Math.min(L/S.fs,S.dur)});plot($('#t2'),sp,{x0:0,x1:xm,ymin:0,xd:0});
+  $('#fres2').innerHTML=(N>s.cl.length?'<p class="warn">FFT size exceeds signal length — zero-padded.</p>':'')+tbl(['Signal','Dominant frequency','Spectral peak','95% energy bandwidth','Δf'],sp.map(o=>{let k=1;for(let i=2;i<o.y.length;i++)if(o.y[i]>o.y[k])k=i;let tot=0;for(const v of o.y)tot+=v*v;let a=0,b=0;for(;b<o.y.length&&a<.95*tot;b++)a+=o.y[b]**2;return[o.n,f(k*df,2)+' Hz',f(o.y[k],4),f(b*df,1)+' Hz',f(df,3)+' Hz']}))}};
+/* convolution */
+const CV={n:0,play:0,h:'ma'};
+function convData(){const st=Math.max(1,Math.round(S.fs/100)),fs2=S.fs/st,N=Math.min(Math.round(3*fs2),Math.floor(cur.clean.length/st)),x=[];for(let i=0;i<N;i++)x.push(cur.clean[i*st]);
+ const h=CV.h=='ma'?Array(10).fill(.1):CV.h=='exp'?Array.from({length:30},(_,i)=>Math.exp(-i/8)/8):CV.h=='diff'?[5,-5]:Array.from({length:21},(_,i)=>Math.exp(-((i-10)**2)/18)/6),y=Array(N+h.length-1).fill(0);
+ for(let k=0;k<N;k++)for(let j=0;j<h.length;j++)y[k+j]+=x[k]*h[j];return{x,h,y,dx:1/fs2}}
+V.conv={html:()=>`<h2>Convolution Lab</h2><div class="card"><p class="ok">y[n] = Σ x[k]·h[n−k] &nbsp;(continuous: y(t)=x(t)*h(t))</p><div class="row">System h ${sel('h',[['ma','Moving average'],['exp','Exponential decay'],['diff','Differentiator'],['gs','Gaussian smoother']],CV.h,'id="hs"')}
+<button class="b p" id="cp">▶ Play</button><button class="b" id="cpa">⏸ Pause</button><button class="b" id="cst">Step →</button><button class="b" id="crs">Reset</button></div><p class="mu" id="cn"></p></div>
+<div class="card"><h3>x[k] with flipped, shifted h[n−k] (h scaled for display)</h3><canvas id="c1" style="height:170px"></canvas></div><div class="g2"><div class="card"><h3>h[n]</h3><canvas id="c2" style="height:170px"></canvas></div><div class="card"><h3>y[n] = x*h (built up to n)</h3><canvas id="c3" style="height:170px"></canvas></div></div>`,
+ init(){$('#hs').onchange=e=>{CV.h=e.target.value;CV.n=0;V.conv.draw()};$('#cp').onclick=()=>CV.play=1;$('#cpa').onclick=()=>CV.play=0;$('#crs').onclick=()=>{CV.n=0;CV.play=0;V.conv.draw()};$('#cst').onclick=()=>{CV.play=0;CV.n=Math.min(CV.n+3,convData().y.length-1);V.conv.draw()}},
+ draw(){mark('conv');const d=convData(),n=Math.floor(CV.n),xm=Math.max(...d.x.map(Math.abs)),hm=Math.max(...d.h.map(Math.abs)),hs=d.x.map((_,k)=>{const j=n-k;return j>=0&&j<d.h.length?d.h[j]/hm*xm:0}),ym=Math.max(...d.y.map(Math.abs))*1.1,T=d.x.length*d.dx;
+  plot($('#c1'),[{y:d.x,dx:d.dx,c:'#4dabf7',n:'x[k]'},{y:hs,dx:d.dx,c:'#ffa94d',n:'h[n−k]',w:2.2}],{x1:T,ymin:-xm*1.2,ymax:xm*1.2});plot($('#c2'),[{y:d.h,dx:d.dx,c:'#ffa94d'}],{x1:d.h.length*d.dx,xd:2});
+  plot($('#c3'),[{y:d.y.slice(0,n+1),dx:d.dx,c:'#00E5A8'}],{x0:0,x1:d.y.length*d.dx,ymin:-ym,ymax:ym});$('#cn').textContent=`n = ${n} of ${d.y.length-1} · y[n] = ${f(d.y[n],4)} · output length = ${d.x.length} + ${d.h.length} − 1 = ${d.y.length}`}};
+/* sampling */
+const SM={f:5,fs:12};
+V.smp={html:()=>`<h2>Sampling & Nyquist Demonstration</h2><div class="card">${'<div class="g2"><div><label>Signal frequency: <b id="sf">'+SM.f+'</b> Hz<input type="range" id="sfr" min="1" max="40" value="'+SM.f+'"></label></div><div><label>Sampling frequency: <b id="ss">'+SM.fs+'</b> Hz<input type="range" id="ssr" min="4" max="200" value="'+SM.fs+'"></label></div></div>'}<div id="sinfo"></div></div><div class="card"><canvas id="sc" style="height:260px"></canvas></div>
+<div class="card"><h3>ECG at different sampling rates (first 2 s)</h3><div class="row" id="sfsb">${[50,100,250,500,1000].map(v=>`<button class="b" data-sf="${v}">${v} Hz</button>`).join('')}</div><p id="sfi" class="mu"></p><canvas id="sc2" style="height:180px"></canvas></div>`,
+ init(){$('#sfr').oninput=e=>{SM.f=+e.target.value;$('#sf').textContent=SM.f;V.smp.draw()};$('#ssr').oninput=e=>{SM.fs=+e.target.value;$('#ss').textContent=SM.fs;V.smp.draw()};document.querySelectorAll('[data-sf]').forEach(b=>b.onclick=()=>{SM.e=+b.dataset.sf;V.smp.draw()})},
+ draw(){const{f:fq,fs}=SM,al=fs<2*fq,fa=Math.abs(fq-Math.round(fq/fs)*fs),nd=1000,ct=Array.from({length:nd},(_,i)=>Math.sin(2*Math.PI*fq*i/nd)),ns=Math.floor(fs),sm=Array.from({length:ns},(_,k)=>Math.sin(2*Math.PI*fq*k/fs));
+  plot($('#sc'),[{y:ct,dx:1/nd,c:'#4dabf7',n:'Continuous',a:.7},{y:sm,dx:1/fs,c:'#ffa94d',n:'Samples / reconstruction',dots:1}],{x0:0,x1:1,ymin:-1.3,ymax:1.3,xd:2});
+  $('#sinfo').innerHTML=`<p>Nyquist frequency fN = Fs/2 = <b>${fs/2} Hz</b> · Ts = ${f(1000/fs,1)} ms · samples per second: ${ns}</p>`+(al?`<p class="err">⚠ Aliasing: Fs (${fs} Hz) &lt; 2·f (${2*fq} Hz). The samples appear as a ${f(fa,1)} Hz signal. Sampling frequency must be at least twice the highest signal frequency.</p>`:'<p class="ok">✓ Fs ≥ 2f — the signal can be reconstructed.</p>');
+  const e=SM.e||500,c=ecg({...S,fs:e,dur:2,noise:0});plot($('#sc2'),[{y:c.x,dx:1/e,c:'#00E5A8'}],{x1:2});$('#sfi').textContent=`Fs = ${e} Hz · 10 s record = ${e*10} samples · Ts = ${f(1000/e,1)} ms · Nyquist = ${e/2} Hz`+(e<100?' · below 2×40 Hz: ECG detail is lost':'')}};
+/* analysis */
+V.ana={html:()=>`<h2>Analysis Lab</h2><div class="g2"><div class="card"><h3>R-peak detection (band-pass → derivative → square → moving integration → threshold)</h3><canvas id="a1"></canvas><p id="apk"></p></div><div class="card"><h3>Computed parameters ${tip('rms')}</h3><div id="at"></div></div></div>
+<div class="g2"><div class="card"><h3>Formula calculators</h3><label>R-R (s) → HR<input id="k1" type="number" value="0.83" step="0.01"></label><p class="ok" id="r1"></p><label>Fs (Hz) → Ts, Nyquist<input id="k2" type="number" value="500"></label><p class="ok" id="r2"></p><label>N samples → Δf = Fs/N (uses Fs above)<input id="k3" type="number" value="1024"></label><p class="ok" id="r3"></p></div>
+<div class="card"><h3>Formulas</h3><p>HR=60/RR · Ts=1/Fs · fN=Fs/2 · x<sub>RMS</sub>=√((1/N)Σx²) · E=Σ|x|² · P=(1/N)Σ|x|² · SNR=10log₁₀(Ps/Pn)</p><p class="mu">Energy signals have finite E (transients); power signals have finite average power and infinite energy (a continuing ECG).</p><p class="mu">Educational simulation only — not diagnostic.</p></div></div>`,
+ init(){['k1','k2','k3'].forEach(i=>$('#'+i).oninput=V.ana.calc)},
+ calc(){const a=+$('#k1').value,b=+$('#k2').value,c=+$('#k3').value;$('#r1').textContent=a>0?`HR = ${f(60/a,1)} BPM`:'Enter R-R > 0';$('#r2').textContent=b>0?`Ts = ${f(1000/b,2)} ms · fN = ${b/2} Hz`:'Fs must be > 0';$('#r3').textContent=b>0&&c>0?`Δf = ${f(b/c,3)} Hz`:'Enter positive values'},
+ draw(){mark('ana');const a=cur.an,fs=S.fs,x1=Math.min(6,S.dur);plot($('#a1'),[{y:cur.sig,dx:1/fs,c:'#00E5A8'}],{x1,marks:a.pk.map(i=>({t:i/fs,v:cur.sig[i],l:'R'}))});
+ $('#apk').innerHTML=`Detected R-peaks: <b>${a.pk.length}</b> · Average R-R: <b>${f(a.rr,2)} s</b> · Estimated HR: <b>${f(a.hr,0)} BPM</b> · true beats: ${cur.beats.length}`;
+ $('#at').innerHTML=tbl(['Parameter','Value'],[['Heart rate',f(a.hr,1)+' BPM'],['R-R interval',f(a.rr,3)+' s'],['R-R variability (SD)',f(a.sd*1000,1)+' ms'],['Peak / min amplitude',f(a.max,3)+' / '+f(a.min,3)+' mV'],['Mean',f(a.mean,4)],['RMS',f(a.rms,4)],['Energy',f(a.energy,1)],['Average power',f(a.power,4)],['Duration',S.dur+' s'],['Fs / samples',S.fs+' Hz / '+a.N],['SNR vs clean',f(snr(cur.clean,cur.sig),1)+' dB'],['Frequency resolution (N=1024)',f(S.fs/1024,3)+' Hz']]);V.ana.calc()}};
+/* quiz */
+const BANK={pre:[['Which wave represents atrial depolarization?',['T wave','P wave','QRS complex','U wave'],1,'The P wave marks atrial depolarization.'],['The QRS complex represents…',['Atrial repolarization','Ventricular depolarization','Ventricular repolarization','SA node firing'],1,'QRS = ventricular depolarization.'],['If R-R = 0.8 s, heart rate is…',['60 BPM','75 BPM','80 BPM','100 BPM'],1,'HR = 60/0.8 = 75 BPM.'],['Nyquist frequency for Fs = 500 Hz is…',['125 Hz','250 Hz','500 Hz','1000 Hz'],1,'fN = Fs/2 = 250 Hz.'],['The Fourier transform reveals a signal\'s…',['Frequency content','Sampling period','Heart rate only','Phase of the heart'],0,'It decomposes a signal into frequency components.'],['Energy of x[n] = [1, 2, 3] is…',['6','14','3.67','36'],1,'1+4+9 = 14.'],['Convolving a 5-sample and a 3-sample sequence gives length…',['8','15','7','5'],2,'5+3−1 = 7.'],['Sampling below 2·fmax causes…',['Aliasing','Amplification','Filtering','Nothing'],0,'Under-sampling folds frequencies (aliasing).']],
+ post:[['The T wave represents…',['Atrial depolarization','Ventricular repolarization','Ventricular depolarization','PR interval'],1,'T = ventricular repolarization.'],['When heart rate increases, R-R interval…',['Increases','Decreases','Stays same','Becomes zero'],1,'RR = 60/HR, so it falls.'],['If R-R interval is 0.75 s, heart rate is…',['60 BPM','75 BPM','80 BPM','90 BPM'],2,'60/0.75 = 80 BPM.'],['Δf for Fs = 1000 Hz and N = 2000 is…',['0.5 Hz','2 Hz','1 Hz','0.25 Hz'],0,'Δf = 1000/2000 = 0.5 Hz.'],['Average power of [1, 2, 3] is…',['14','4.67','6','2'],1,'14/3 ≈ 4.67.'],['x(t − 2) is x(t)…',['Advanced by 2 s','Delayed by 2 s','Scaled by 2','Reversed'],1,'Subtracting from t shifts the waveform right (delay).'],['Which filter best removes 50 Hz power-line interference?',['Notch','High-pass 0.5 Hz','All-pass','Differentiator'],0,'A notch filter rejects a narrow band.'],['RMS of [3, 4] is…',['2.5','3.54','5','7'],1,'√((9+16)/2) ≈ 3.54.']]};
+const quiz=k=>({html:()=>{const r=QZ[k];return`<h2>${k=='pre'?'Pre':'Post'}-Test</h2><div class="card" id="qz">${BANK[k].map((q,i)=>`<div class="q"><b>${i+1}. ${q[0]}</b>${q[1].map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}" ${r&&r.a[i]==j?'checked':''} ${r?'disabled':''}> ${o}</label>`).join('')}<div class="mu" id="ex${i}" style="display:none"></div></div>`).join('')}<div class="row"><button class="b p" id="qs">${r?'Retake':'Submit'}</button><b id="qr"></b></div></div>`},
+ init(){const r=QZ[k];$('#qs').onclick=()=>{if(QZ[k]){delete QZ[k];LS.set('QZ',QZ);delete P[k];render();return}const a=BANK[k].map((_,i)=>{const e=document.querySelector(`[name=q${i}]:checked`);return e?+e.value:-1});if(a.includes(-1)){toast('Answer all questions first');return}
+  QZ[k]={a,s:a.filter((v,i)=>v==BANK[k][i][2]).length};LS.set('QZ',QZ);mark(k);render()};
+  if(r){$('#qr').textContent=`Score: ${r.s}/${BANK[k].length}`;BANK[k].forEach((q,i)=>{const e=$('#ex'+i);e.style.display='block';const ok=r.a[i]==q[2];e.innerHTML=`<span class="${ok?'ok':'err'}">${ok?'✓ Correct':'✗ Incorrect — answer: '+q[1][q[2]]}</span>. ${q[3]}`})}}});
+V.pre=quiz('pre');V.post=quiz('post');
+/* results */
+function conclusion(){const a=cur.an,b=B.an,p=B.p;let t=`The simulated ECG (${COND[S.cond]}) was generated at ${S.hr} BPM with Fs = ${S.fs} Hz. `;
+ t+=p.hr!=S.hr?`Compared with the BEFORE signal (${p.hr} BPM), the R-R interval changed from ${f(b.rr,2)} s to ${f(a.rr,2)} s, confirming HR = 60/RR. `:'';t+=S.noise?`Noise (${NZ[S.noise]}) reduced SNR to ${f(snr(cur.clean,cur.sig),1)} dB. `:'';
+ const s=sigs();t+=F.lvl?`Filtering (${F.hp?'HP ':''}${F.lp?'LP ':''}${F.nt?'Notch':''}) changed SNR from ${f(snr(s.cl,s.nz),1)} to ${f(snr(s.cl,s.fl),1)} dB. `:'';t+=`The R-peak detector found ${a.pk.length} peaks; RMS = ${f(a.rms,3)}, average power = ${f(a.power,4)}. FFT analysis showed the ECG energy concentrated at low frequencies. Educational simulation only.`;return t}
+const pr=k=>QZ[k]?QZ[k].s+'/'+BANK[k].length:'not taken';
+function payload(){return{student:PROF,date:new Date().toISOString(),title:'Generation and Analysis of ECG Signal',params:S,before:{p:B.p,hr:B.an.hr,rr:B.an.rr,rms:B.an.rms,energy:B.an.energy,power:B.an.power},after:{hr:cur.an.hr,rr:cur.an.rr,rms:cur.an.rms,energy:cur.an.energy,power:cur.an.power},observations:OBS,pre:QZ.pre?.s??null,post:QZ.post?.s??null,conclusion:conclusion()}}
+function reportHTML(){const p=payload(),o=OBS.map((r,i)=>`<tr><td>${i+1}</td><td>${r.c}</td><td>${r.hr}</td><td>${r.rr}</td><td>${r.amp}</td><td>${r.fs}</td><td>${r.nz}</td><td>${r.rms}</td><td>${r.en}</td><td>${r.pw}</td><td>${r.rh}</td><td>${r.ob}</td></tr>`).join('');
+ return`<!DOCTYPE html><html><head><meta charset="utf-8"><title>ECG Lab Report</title><style>body{font:14px system-ui;max-width:800px;margin:20px auto;padding:0 12px}table{border-collapse:collapse;width:100%;font-size:12px}td,th{border:1px solid #999;padding:4px}h1,h2{color:#064}</style></head><body><h1>Generation and Analysis of ECG Signal</h1><p>Student: ${PROF.name||'-'} · PRN: ${PROF.prn||'-'} · ${PROF.college||'-'} · ${PROF.branch||'-'} · Sem ${PROF.sem||'-'}<br>Date: ${new Date().toLocaleString()}</p><p><i>Educational simulation only — not a medical diagnostic system.</i></p>
+<h2>Objective</h2><p>To generate and analyze a simulated ECG signal and study the relationship between heart rate, R-R interval, waveform morphology and signal characteristics.</p><h2>Theory</h2><p>HR = 60/RR; RMS = √((1/N)Σx²); E = Σ|x|²; P = E/N; Δf = Fs/N; fN = Fs/2.</p>
+<h2>Parameters</h2><p>${COND[S.cond]}, HR ${S.hr} BPM, amplitude ×${S.amp}, Fs ${S.fs} Hz, ${S.dur} s, noise ${NZ[S.noise]}</p><h2>Before vs After</h2><table><tr><th></th><th>HR</th><th>R-R</th><th>RMS</th><th>Energy</th><th>Power</th></tr><tr><td>Before</td><td>${f(p.before.hr,1)}</td><td>${f(p.before.rr,3)}</td><td>${f(p.before.rms,4)}</td><td>${f(p.before.energy,1)}</td><td>${f(p.before.power,4)}</td></tr><tr><td>After</td><td>${f(p.after.hr,1)}</td><td>${f(p.after.rr,3)}</td><td>${f(p.after.rms,4)}</td><td>${f(p.after.energy,1)}</td><td>${f(p.after.power,4)}</td></tr></table>
+<h2>Observations</h2><table><tr><th>No</th><th>Condition</th><th>HR</th><th>R-R</th><th>Amp</th><th>Fs</th><th>Noise</th><th>RMS</th><th>Energy</th><th>Power</th><th>Rhythm</th><th>Note</th></tr>${o}</table><h2>Quiz</h2><p>Pre-test: ${pr('pre')} · Post-test: ${pr('post')}</p><h2>Conclusion</h2><p>${p.conclusion}</p></body></html>`}
+function saveExp(){HIST.unshift({d:new Date().toLocaleString(),c:COND[S.cond],hr:f(cur.an.hr,0),rr:f(cur.an.rr,2),sc:pr('pre')+' → '+pr('post'),S:{...S}});HIST=HIST.slice(0,20);LS.set('HIST',HIST);toast('Experiment saved locally')}
+V.res={html:()=>{const pre=QZ.pre?.s,post=QZ.post?.s,imp=pre!=null&&post!=null?(pre?f((post-pre)/pre*100,0)+'%':'n/a'):'—';return`<h2>Results & Report</h2><div class="card"><h3>Student profile (saved locally)</h3><div class="row">${[['name','Name'],['prn','PRN / Roll'],['college','College'],['branch','Branch'],['sem','Semester']].map(([k,l])=>`<input data-pf="${k}" placeholder="${l}" value="${PROF[k]||''}" aria-label="${l}">`).join('')}</div></div>
+<div class="card"><h3>Summary</h3><p><b>Objective:</b> Generate and analyze a simulated ECG signal and study HR, R-R interval, morphology and signal characteristics.</p><p>Pre-test: <b>${pr('pre')}</b> · Post-test: <b>${pr('post')}</b> · Improvement: <b class="ok">${imp}</b></p><p><b>Conclusion:</b> ${conclusion()}</p></div>
+<div class="card"><h3>Observation table</h3><div class="sc"><table><tr><th>No</th><th>Condition</th><th>HR</th><th>R-R</th><th>Amp</th><th>Fs</th><th>Noise</th><th>RMS</th><th>Energy</th><th>Power</th><th>Rhythm</th><th>Observation</th><th></th></tr>${OBS.map((r,i)=>`<tr><td>${i+1}</td><td><input data-o="${i}.c" value="${r.c}" size="14"></td><td>${r.hr}</td><td>${r.rr}</td><td>${r.amp}</td><td>${r.fs}</td><td>${r.nz}</td><td>${r.rms}</td><td>${r.en}</td><td>${r.pw}</td><td>${r.rh}</td><td><input data-o="${i}.ob" value="${r.ob}" size="18" placeholder="Note"></td><td><button class="b" data-del="${i}" aria-label="Delete row">✕</button></td></tr>`).join('')||'<tr><td colspan="13" class="mu">No rows yet — add from the Simulator or below.</td></tr>'}</table></div><div class="row" style="margin-top:8px"><button class="b p" id="ar">+ Add row from current signal</button></div></div>
+<div class="card"><h3>Export</h3><div class="row"><button class="b p" id="xh">Download report (HTML → print to PDF)</button><button class="b" id="xc">Download CSV</button><button class="b" id="xj">Download JSON</button><button class="b" id="xs">Save experiment</button></div></div>
+<div class="card"><h3>Experiment history</h3>${HIST.length?tbl(['Date','Condition','HR','R-R','Scores',''],HIST.map((h,i)=>[h.d,h.c,h.hr,h.rr,h.sc,`<button class="b" data-hop="${i}">Open</button> <button class="b" data-hdel="${i}">Delete</button>`])):'<p class="mu">No saved experiments.</p>'}</div>`},
+ init(){document.querySelectorAll('[data-pf]').forEach(e=>e.oninput=()=>{PROF[e.dataset.pf]=e.value;LS.set('PROF',PROF)});document.querySelectorAll('[data-o]').forEach(e=>e.oninput=()=>{const[i,k]=e.dataset.o.split('.');OBS[i][k]=e.value;LS.set('OBS',OBS)});
+  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{OBS.splice(+b.dataset.del,1);LS.set('OBS',OBS);render()});$('#ar').onclick=()=>{addRow();render()};
+  $('#xh').onclick=()=>dl('ecg-lab-report.html',reportHTML());$('#xc').onclick=()=>dl('ecg-observations.csv',['No,Condition,HR,RR,Amp,Fs,Noise,RMS,Energy,Power,Rhythm,Observation'].concat(OBS.map((r,i)=>[i+1,r.c,r.hr,r.rr,r.amp,r.fs,r.nz,r.rms,r.en,r.pw,r.rh,r.ob].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','))).join('\n'));
+  $('#xj').onclick=()=>dl('ecg-experiment.json',JSON.stringify(payload(),null,2));$('#xs').onclick=()=>{saveExp();render()};
+  document.querySelectorAll('[data-hdel]').forEach(b=>b.onclick=()=>{HIST.splice(+b.dataset.hdel,1);LS.set('HIST',HIST);render()});document.querySelectorAll('[data-hop]').forEach(b=>b.onclick=()=>{S={...HIST[+b.dataset.hop].S};rebuild();go('sim')})}};
+/* ---------- shell ---------- */
+const NAV=[['dash','Dashboard'],['theory','Theory'],['pre','Pre-Test'],['sim','Simulator'],['ops','Signal Ops'],['flt','Filtering'],['fft','Fourier'],['conv','Convolution'],['smp','Sampling'],['ana','Analysis'],['post','Post-Test'],['res','Results']];
+function renderNav(){$('#nav').innerHTML=`<h1>ECG SIGNALS & SYSTEMS<br>VIRTUAL LAB</h1><small>Interactive simulation and analysis of ECG signals</small>`+NAV.map(([k,n])=>`<button data-go="${k}" class="${k==view?'on':''}" ${k==view?'aria-current="page"':''}>${n}</button>`).join('')+`<button id="th">◐ Theme</button>`;$('#th').onclick=()=>{const t=document.documentElement.dataset.theme=='light'?'dark':'light';document.documentElement.dataset.theme=t;LS.set('theme',t);dirty=1;refresh()}}
+function render(){renderNav();const v=V[view];$('#main').innerHTML=v.html();bindCtl($('#main'));v.init?.();if(['theory','sim','ops','flt','fft','conv','ana'].includes(view))mark(view);v.draw?.();dirty=1;window.scrollTo(0,0)}
+function refresh(){V[view].draw?.();dirty=1}
+function go(k){view=k;render()}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g&&g.id!='th')go(g.dataset.go)});
+/* command center */
+const CMD=[['Start',()=>{running=true;dirty=1}],['Pause',()=>running=false],['Reset',resetAll],['Add noise',()=>{upd('noise',Math.min(3,S.noise+1))}],['Apply filter',()=>go('flt')],['Run FFT',()=>go('fft')],['Analyze',()=>go('ana')],['Save experiment',()=>{saveExp()}],['Export report',()=>{go('res')}]];
+$('#cmd').innerHTML=CMD.map(([n],i)=>`<button class="b" style="width:100%;margin:2px 0" data-c="${i}">${n}</button>`).join('');
+$('#cmd').addEventListener('click',e=>{const i=e.target.dataset.c;if(i!=null){CMD[i][1]();toast(CMD[i][0])}});$('#fab').onclick=()=>{const c=$('#cmd');c.style.display=c.style.display=='block'?'none':'block'};
+/* animation loop */
+let last=0,lastUI=0;
+function drawScope(id){const cv=$(id);if(!cv||!cur)return;const W=id=='#mini'?3:4,x0=hd-W,fs=S.fs,few=cur.beats.filter(t=>t>x0&&t<hd).length<=5&&id!='#mini',a=cur.an;
+ const marks=cur.waves.filter(w=>w.t>=x0&&w.t<=hd&&(few||w.l=='R')).map(w=>({t:w.t,v:cur.sig[Math.min(cur.sig.length-1,Math.round(w.t*fs))],l:w.l,c:w.l=='R'?'#ff6b6b':'#ffa94d',dn:w.l=='Q'||w.l=='S'}));
+ plot(cv,[{y:cur.sig,dx:1/fs,c:'#00E5A8',w:1.8}],{x0,x1:hd,marks,cursor:hd,ymin:a.min-.25,ymax:a.max+.25})}
+function loop(ts){const dt=Math.min(.1,(ts-last)/1000);last=ts;
+ if(running&&(view=='sim'||view=='dash')){hd+=dt*S.speed;if(hd>S.dur)hd=4;dirty=1}
+ if(view=='conv'&&CV.play){CV.n+=dt*45;const L=convData().y.length-1;if(CV.n>=L){CV.n=L;CV.play=0}V.conv.draw()}
+ if(dirty){if(view=='sim')drawScope('#scope');if(view=='dash')drawScope('#mini');dirty=0}
+ if(ts-lastUI>250){lastUI=ts;const c=$('#cyc');if(c)c.textContent=cur.beats.filter(t=>t<=hd).length}
+ requestAnimationFrame(loop)}
+window.addEventListener('resize',()=>{dirty=1;refresh()});
+document.documentElement.dataset.theme=LS.get('theme','dark');
+B=build(DEF);rebuild();render();V.ana.calc&&0;requestAnimationFrame(loop);
+</script></body></html>
